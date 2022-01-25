@@ -1,0 +1,7 @@
+{
+  "requests": false,
+  "pandas": false,
+  "numpy": false,
+  "matplotlib": false,
+  "Office365-REST-Python-Client": false
+}

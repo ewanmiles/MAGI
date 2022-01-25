@@ -1,0 +1,274 @@
+{
+    "modules": {
+        "M3": {
+            "name": "M3-Electrical fundamentals",
+            "submodules": {
+                "3.1": "3.1 - Electron Theory",
+                "3.2": "3.2 - Static Electricity and Conduction",
+                "3.3": "3.3 - Electrical Terminology",
+                "3.4": "3.4 - Generation of Electricity",
+                "3.5": "3.5 - DC Sources of Electricity",
+                "3.6": "3.6 - DC Circuits",
+                "3.7": "3.7 - Resistance and Resistors",
+                "3.8": "3.8 - Power",
+                "3.9": "3.9 - Conduction and Capacitors",
+                "3.10": "3.10 - Magnetism",
+                "3.11": "3.11 - Inductance and Inductors",
+                "3.12": "3.12 - DC Motors and Generator Theory",
+                "3.13": "3.13 - AC Theory",
+                "3.14": "3.14 - Resistive, Capacitive and Inductive Circuits",
+                "3.15": "3.15 - Transformers",
+                "3.16": "3.16 - Filters",
+                "3.17": "3.17 - AC Generators",
+                "3.18": "3.18 - AC Motors" 
+            }
+        },
+        "M4": {
+            "name": "M4-Electronic fundamentals",
+            "submodules": {
+                "4.1": "4.1 - Semiconductors",
+                "4.2": "4.2 - Printed Circuit Boards",
+                "4.3": "4.3 - Servomechanisms"
+            }
+        },
+        "M5": {
+            "name": "M5-Digital Techniques, Electronic Instrument Systems",
+            "submodules": {
+                "5.1": "5.1 - Electronic Instrument Systems",
+                "5.2": "5.2 - Numbering Systems",
+                "5.3": "5.3 - Data Conversion",
+                "5.4": "5.4 - Data Buses",
+                "5.5": "5.5 - Logic Circuits",
+                "5.6": "5.6 - Basic Computer Structure",
+                "5.7": "5.7 - Microprocessors",
+                "5.8": "5.8 - Integrated Circuits",
+                "5.9": "5.9 - Multiplexing",
+                "5.10": "5.10 - Fibre Optics",
+                "5.11": "5.11 - Electronic Displays",
+                "5.12": "5.12 - Electrostatic Sensitive Devices",
+                "5.13": "5.13 - Software Management Control",
+                "5.14": "5.14 - Electromagnetic Environment",
+                "5.15": "5.15 - Typical Electronic and Digital Aircraft Systems"
+            }
+        },
+        "M6": {
+            "name": "M6-Materials and Hardware",
+            "submodules": {
+                "6.1.a": "6.1 Aircraft Materials - Ferrous",
+                "6.2": "6.1b and 6.2b",
+                "6.3": "6.3 Aircraft Materials - Composite and Non-Metallic",
+                "6.4": "6.4 Corrosion",
+                "6.5": "6.5 Fasteners",
+                "6.6": "6.6 Pipes and Unions",
+                "6.7": "6.7 Springs",
+                "6.8": "6.8 Bearings",
+                "6.9": "6.9 Transmissions",
+                "6.10": "6.10 Control cables",
+                "6.11": "6.11 Electrical Cables and Connectors"
+            }
+        },
+        "M7": {
+            "name": "M7-Maintenance Practices",
+            "submodules": {
+                "7.1": "7.1 - Safety Precautions - Aircraft and Workshop",
+                "7.2": "7.2 - Workshop Practices",
+                "7.3": "7.3 - Tools",
+                "7.4": "7.4 - Avionic General Test Equipment",
+                "7.5": "7.5 - Engineering Drawings, Diagrams and Standards",
+                "7.6": "7.6 - Fits and Clearances",
+                "7.7": "7.7 - Electrical Wiring Interconnection Systems (EWIS)",
+                "7.8": "7.8 - Riveting",
+                "7.9": "7.9 - Pipes and Hoses",
+                "7.10": "7.10 - Springs",
+                "7.11": "7.11 - Bearings",
+                "7.12": "7.12 - Transmissions",
+                "7.13": "7.13 - Control Cables",
+                "7.14": "7.14 - Material Handling",
+                "7.15": "7.15 - Welding, Brazing, Soldering and Bonding",
+                "7.16": "7.16 - Aircraft Weight and Balance",
+                "7.17": "7.17 - Aircraft Handling and Storage",
+                "7.18": "7.18 Disassembly, Inspection, Repair and Assembly Techniques",
+                "7.19": "7.19 - Abnormal Events",
+                "7.20": "7.20 - Maintenance Procedures"
+            }
+        },
+        "M8": {
+            "name": "M8-Basic Aerodynamics",
+            "submodules": {
+                "8.1": "8.1 - Physics of the Atmosphere",
+                "8.2": "8.2 - Aerodynamics",
+                "8.3": "8.3 - Theory of Flight",
+                "8.4": "8.4 - Flight Stability and Dynamics"
+            }
+        },
+        "M9": {
+            "name": "M9-Human Factors",
+            "submodules": {
+                "9.1": "9.1 - General",
+                "9.2": "9.2 - Human Performance and Limitations",
+                "9.3": "9.3 - Social Psychology",
+                "9.4": "9.4 - Factors Affecting Performance",
+                "9.5": "9.5 - Physical Environment",
+                "9.6": "9.6 - Tasks",
+                "9.7": "9.7 - Communication",
+                "9.8": "9.8 - Human Error",
+                "9.9": "9.9 - Hazards in the Workplace"
+            }
+        },
+        "M10": {
+            "name": "M10-Aviation legislation",
+            "submodules": {
+                "10.1": "10.1 - Regulatory Framework",
+                "10.2": "10.2 - Certifying Staff - Maintenance",
+                "10.3": "10.3 - Approved Maintenance Organisations",
+                "10.4": "10.4 - Air Operations",
+                "10.5": "10.5 - Certification of Aircraft, Parts and Applications",
+                "10.6": "10.6 - Continuing Airworthiness",
+                "10.7": "10.7 - Applicable National and International Requirements"
+            }
+        },
+        "M11": {
+            "name": "M11-Airframe Structures",
+            "submodules": {
+                "11.1": "11.1 - Theory of Flight",
+                "11.2": "11.2 - Airframe Structures",
+                "11.3": "11.3 - Airframe Structures - Aeroplanes",
+                "11.4": "11.4 - Air Conditioning and Cabin Pressurisation",
+                "11.5": "11.5 - Instruments and Avionics Systems",
+                "11.6": "11.6 - Electrical Power",
+                "11.7": "11.7 - Equipment and Furnishings",
+                "11.8": "11.8 - Fire Protection",
+                "11.9": "11.9 - Flight Controls",
+                "11.10": "11.10 - Fuel Systems",
+                "11.11": "11.11 - Hydraulic Power",
+                "11.12": "11.12 - Ice and Rain Protection",
+                "11.13": "11.13 - Landing Gear",
+                "11.14": "11.14 - Lights",
+                "11.15": "11.15 - Oxygen",
+                "11.16": "11.16 - Pneumatic and Vacuum",
+                "11.17": "11.17 - Water and Waste",
+                "11.18": "11.18 - On Board Maintenance Systems",
+                "11.19": "11.19 - Integrated Modular Avionics",
+                "11.20": "11.20 - Cabin Systems",
+                "11.21": "11.21 - Information Systems"
+            }
+        },
+        "M12": {
+            "name": "M12-Helicopter Aerodynamics, Structures and Systems",
+            "submodules": {
+                "12.1": "12.1 - Theory of Flight - Rotary Wing Aerodynamics",
+                "12.2": "12.2 - Flight Control Systems",
+                "12.3": "12.3 - Blade Tracking and Vibration Analysis",
+                "12.4": "12.4 - Transmissions",
+                "12.5": "12.5 - Airframe Structures",
+                "12.6": "12.6 - Air Conditioning",
+                "12.7": "12.7 - Instruments and Avionic Systems",
+                "12.8": "12.8 - Electrical Power",
+                "12.9": "12.9 - Equipment and Furnisings",
+                "12.10": "12.10 - Fire Protection",
+                "12.11": "12.11 - Fuel Systems",
+                "12.12": "12.12 - Hydraulic Power",
+                "12.13": "12.13 - Landing Gear",
+                "12.14": "12.14 - Lights",
+                "12.15": "12.15 - Oxygen",
+                "12.16": "12.16 - Pneumatic and Vacuum",
+                "12.17": "12.17 - Water and Waste",
+                "12.18": "12.18 - On Board Maintenance Systems",
+                "12.19": "12.19 - Information Systems"
+            }
+        },
+        "M13": {
+            "name": "M13-Aircraft Aerodynamics, Structures and Systems",
+            "submodules": {
+                "13.1": "13.1 - Theory of Flight",
+                "13.2": "13.2 - Structures - General Concepts",
+                "13.3": "13.3 - Autoflight",
+                "13.4": "13.4 - Communication and Navigation",
+                "13.5": "13.5 - Electrical Power",
+                "13.6": "13.6 - Equipment and Furnishings",
+                "13.7": "13.7 - Flight Controls",
+                "13.8": "13.8 - Instruments",
+                "13.9": "13.9 - Lights",
+                "13.10": "13.10 - On Board Maintenance Systems",
+                "13.11": "13.11 - Air Conditions and Cabin Pressurisation",
+                "13.12": "13.12 - Fire Protection",
+                "13.13": "13.13 - Fuel Systems",
+                "13.14": "13.14 - Hydraulic Power",
+                "13.15": "13.15 - Ice and Rain Protection",
+                "13.16": "13.16 - Landing Gear",
+                "13.17": "13.17 - Oxygen",
+                "13.18": "13.18 - Pneumatic and Vacuum",
+                "13.19": "13.19 - Water and Waste",
+                "13.20": "13.20 - Integrated Modular Avionics",
+                "13.21": "13.21 - Cabin Systems",
+                "13.22": "13.22 - Information Systems"
+
+            }
+        },
+        "M14": {
+            "name": "M14-Propulsion",
+            "submodules": {
+                "14.1": "14.1 - Turbine Engines",
+                "14.2": "14.2 - Engine Indicating Systems",
+                "14.3": "14.3 - Starting and Ignition Systems"
+            }
+        },
+        "M15": {
+            "name": "M15-Gas Turbine Engine",
+            "submodules": {
+                "15.1": "15.1 - Fundamentals",
+                "15.2": "15.2 - Engine Performance",
+                "15.3": "15.3 - Inlet",
+                "15.4": "15.4 - Compressors",
+                "15.5": "15.5 - Combustion Section",
+                "15.6": "15.6 - Turbine Section",
+                "15.7": "15.7 - Exhaust",
+                "15.8": "15.8 - Bearings and Seals",
+                "15.9": "15.9 - Lubricants and Fuels",
+                "15.10": "15.10 - Lubrication Systems",
+                "15.11": "15.11 - Fuel Systems",
+                "15.12": "15.12 - Air Systems",
+                "15.13": "15.13 - Starting and Ignition Systems",
+                "15.14": "15.14 - Engine Indication Systems",
+                "15.15": "15.15 - Power Augmentation Systems",
+                "15.16": "15.16 - Turbo-prop Engines",
+                "15.17": "15.17 - Turbo-shaft Engines",
+                "15.18": "15.18 - Auxiliary Power Units",
+                "15.19": "15.19 - Powerplant Installation",
+                "15.20": "15.20 - Fire Protection Systems",
+                "15.21": "15.21 - Engine Monitoring and Ground Operation",
+                "15.22": "15.22 - Engine Storage and Preservation"
+            }
+        },
+        "M16": {
+            "name": "M16-Piston Engine",
+            "submodules": {
+                "16.1": "16.1 - Fundamentals",
+                "16.2": "16.2 - Engine Performance",
+                "16.3": "16.3 - Engine Construction",
+                "16.4": "16.4 - Engine Fuel Systems",
+                "16.5": "16.5 - Starting and Ignition Systems",
+                "16.6": "16.6 - Induction, Exhaust and Cooling Systems",
+                "16.7": "16.7 - Supercharging and Turbocharging",
+                "16.8": "16.8 - Lubricants and Fuels",
+                "16.9": "16.9 - Lubrication Systems",
+                "16.10": "16.10 - Engine Indication Systems",
+                "16.11": "16.11 - Powerplant Installation",
+                "16.12": "16.12 - Engine Monitoring and Ground Operation",
+                "16.13": "16.13 - Engine Storage and Preservation"
+            }
+        },
+        "M17": {
+            "name": "M17-Propeller",
+            "submodules": {
+                "17.1": "17.1 - Fundamentals",
+                "17.2": "17.2 - Propeller Construction",
+                "17.3": "17.3 - Propeller Pitch Control",
+                "17.4": "17.4 - Propeller Synchronising",
+                "17.5": "17.5 - Propeller Ice Protection",
+                "17.6": "17.6 - Propeller Maintenance",
+                "17.7": "17.7 - Propeller Storage and Preservation"
+            }
+        }
+    }
+}
