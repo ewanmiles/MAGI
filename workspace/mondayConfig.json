@@ -2,7 +2,7 @@
   "monday": {
     "login": {
       "apiKey": "",
-      "apiUrl": ""
+      "apiUrl": "https://api.monday.com/v2"
     },
     "boardIDs": {
     }

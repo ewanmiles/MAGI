@@ -2,6 +2,7 @@ import json, re, time
 from datetime import date
 import os, sys
 import tkinter as tk
+from tkinter import filedialog
 from tkinter.ttk import Combobox
 from threading import Event, Thread
 
@@ -141,7 +142,25 @@ def fetchEntries():
 
     window.destroy()
 
-def updateSubmoduleChoices(event):
+def browseFiles(label: tk.Label):
+    """
+    Opens a file dialog through tkinter to browse for the module folder; input
+        - label: Label to change on the dialog box to show the chosen path.
+    """
+    global MODULE_PATH
+
+    MODULE_PATH = filedialog.askdirectory(initialdir = "/",
+                                          title = "Select your Module folder (e.g. containing Content, etc.)")
+    try:
+        MODULE_PATH = MODULE_PATH.replace('C:','')
+    except:
+        pass
+    
+    updateSubmoduleChoices()
+    label['text'] = MODULE_PATH
+
+def updateSubmoduleChoices():
+
     #Dict for dir tree to dump into json
     tree = {
         'modules': {}
@@ -150,12 +169,11 @@ def updateSubmoduleChoices(event):
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]\.[0-9]\.[a-zA-Z0-9]).*)$"
+    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
     #Now checking for X.X in centre
     subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
-    path = f'/{moduleOptions.get()}/Content/'
 
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(MODULE_PATH):
         for name in dirs:
 
             if 'Resources' in root: #Skip files under the resources folder (just need document structure)
@@ -194,8 +212,9 @@ def updateSubmoduleChoices(event):
                     }
 
     submoduleList = list(tree['modules'].keys())
+    submoduleList = [i for i in submoduleList if i[-1] != '.']
     submoduleChoice.set(submoduleList[0])
-    submoduleOptions['values'] = ['All']+list(tree['modules'].keys())
+    submoduleOptions['values'] = ['All']+submoduleList
 
 if 'loginDict' not in list(globals().keys()):
     sys.exit()
@@ -214,11 +233,15 @@ button = tk.Button(
 
 mTitle = tk.Label(text="Module", pady=10)
 submTitle = tk.Label(text="Submodule", pady=10)
+pathTitle = tk.Label(text="Select a file path", pady=10)
+pathSubtitle = tk.Label(text="Not chosen", pady=10, fg='blue')
 bTitle = tk.Label(text="Monday Board", pady=10)
+
+pathButton = tk.Button(window, text = "Browse Files", command=lambda: browseFiles(pathSubtitle))
 
 moduleChoice = tk.StringVar(window)
 moduleChoice.set('M1')
-modules = [f'M{i}' for i in range(1,18)]
+modules = [f'M{i}' for i in range(18)]
 moduleOptions = Combobox(window, textvariable=moduleChoice, values=modules)
 
 submoduleChoice = tk.StringVar(window)
@@ -231,9 +254,9 @@ boardChoice = tk.StringVar(window)
 boardChoice.set('Upload to Flare')
 boardOptions = Combobox(window, textvariable=boardChoice, values=boards)
 
-moduleOptions.bind("<<ComboboxSelected>>", updateSubmoduleChoices)
+#moduleOptions.bind("<<ComboboxSelected>>", updateSubmoduleChoices)
 
-for item in [acronym,title,mTitle,moduleOptions,submTitle,submoduleOptions,bTitle,boardOptions]:
+for item in [acronym,title,mTitle,moduleOptions,pathTitle,pathSubtitle,pathButton,submTitle,submoduleOptions,bTitle,boardOptions]:
     item.pack()
 button.pack(pady=40)
 
@@ -307,7 +330,7 @@ def downloadFiles(fileList):
         for ext in extensions:
             try:
                 #Get file from API
-                response = web.get_file_by_server_relative_path(f"{YOUR SITE API URL}")
+                response = web.get_file_by_server_relative_path(f"/sites/Part-66Project/Shared Documents/General/Modules/{module_dict[module]['name']}/Development/Graphics/New {module} Graphics/{fi}{ext}")
                 download_path = os.path.join(buildContentPaths(fi, module)[1], f'{fi}{ext}')
 
                 with open(download_path, "wb") as local_file:
@@ -345,7 +368,7 @@ def buildModuleConfig(path, outfile, debug=False):
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]\.[0-9]\.[a-zA-Z0-9]).*)$"
+    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
     #Now checking for X.X in centre
     subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
 
@@ -461,7 +484,7 @@ def parseSubmodule(fileName):
 
     #Centre brackets check for group X.X.X where X is any single integer
     #\D either side check for full string of any non numeric characters either side
-    subSubRegex = "^(.*?([0-9]\.[0-9]\.[a-zA-Z0-9]).*)$"
+    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
     #Now checking for X.X in centre
     subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
 
@@ -486,10 +509,10 @@ def buildContentPaths(fileName, module):
 
     try:
         sub = module_dict[module]['submodules'][graphicReplaceMap[fileName]['submodule']]
-        return [os.path.join(f'/{module}/Content', sub), os.path.join(f'/{module}/Content/Resources/Images/New/')]
+        return [os.path.join(f'{MODULE_PATH}/Content', sub), os.path.join(f'{MODULE_PATH}/Content/Resources/Images/New/')]
     except KeyError:
         path = submodule_dict[parseSubmodule(fileName)[1]]['path']
-        return [path, os.path.join(f'/{module}/Content/Resources/Images/New/')]
+        return [path, os.path.join(f'{MODULE_PATH}/Content/Resources/Images/New/')]
 
 def replaceExistingFigures(files):
     for filePath in files:
@@ -523,6 +546,30 @@ def replaceExistingFigures(files):
         except PermissionError:
             info['text'] += f"\nERROR! MAGI can't access {filePath.replace('.htm', '-embedded.htm')}. This is likely because you have it open in Flare, or somewhere else. Please close the editor and try again."
 
+def addFigureTags(l):
+    """
+    Adds figure tags back into documents where they are absent around <img><figcaption>; input
+        -l (arr): Unpacked lines(mainly from readlines()) from the target document
+    Returns the same list of lines back with figure tags added in
+    """
+
+    #While loop is one of the easiest ways
+    ind = 0
+    while ind < len(l)-1:
+
+        if ('<img' in l[ind]) and ('<figure' not in l[ind-1]): #Line with img tag but no figure tag before, add figure previous
+            l = l[:ind] + ['\t<figure class="fortyPercent">\n'] + l[ind:]
+            ind += 2
+
+        elif ('<figcaption' in l[ind]) and ('</figure' not in l[ind+1]): #Line with figcaption tag but no closing figure tag after, add /figure next
+            l = l[:ind+1] + ['\t</figure>\n'] + l[ind+1:]
+            ind += 2
+
+        #Regular line, nothing interesting  
+        else:
+            ind += 1
+
+    return l
 
 def embedImages(graphic, filePath):
     #Read lines of origin doc (no embedded images here)
@@ -540,32 +587,36 @@ def embedImages(graphic, filePath):
     #New empty HTML to write the file
     newDoc = ""
     for ind, l in enumerate(line_list): #Go through lines of origin doc with image names and captions
-        if (ind == graphicInd):
-            continue #Skip lines with graphic names
+        try:
+            if (ind == graphicInd):
+                continue #Skip lines with graphic names
 
-        elif ind-1 == graphicInd: #This line has the graphic caption
-            try:
-                graphicExt = graphicReplaceMap[graphic]['ext'] #Get graphic extension from dict
-                gPathPrefix = graphicReplaceMap[graphic]['pathPrefix']
-            except KeyError:
-                windowLog(info, 'Graphic extension not successfully found. It is likely the file was not downloaded. Skipping embed.')
-                return None
+            elif ind-1 == graphicInd: #This line has the graphic caption
+                try:
+                    graphicExt = graphicReplaceMap[graphic]['ext'] #Get graphic extension from dict
+                    gPathPrefix = graphicReplaceMap[graphic]['pathPrefix']
+                except KeyError:
+                    windowLog(info, 'Graphic extension not successfully found. It is likely the file was not downloaded. Skipping embed.')
+                    return None
 
-            #Build caption from line
-            caption = deleteMultiple(line_list[ind], ['<p>','</p>','  ','\n','\t','<figcaption>','</figcaption>'])
-            
-            #Build snippet from external HTML file
-            with open('baseSnippet.html', 'r') as f:
-                snip = f.read()
-                snip = snip.replace('src=""', f'src="{gPathPrefix}Resources/Images/New/{graphic}{graphicExt}"')
-                snip = snip.replace("><", f">{caption}<")
-            
-            windowLog(info, f"{graphic}{graphicExt} successfully embedded in {filePath.replace('.htm','-embedded.htm')}\n")
-            newDoc += f'\n{snip}\n\n' #Add snippet to new document (KEEP THE NEWLINES HERE)
-            reportContent[graphic] = 2
+                #Build caption from line
+                caption = deleteMultiple(line_list[ind], ['<p>','</p>','  ','\n','\t','<figcaption>','</figcaption>'])
+                
+                #Build snippet from external HTML file
+                with open('baseSnippet.html', 'r') as f:
+                    snip = f.read()
+                    snip = snip.replace('src=""', f'src="{gPathPrefix}Resources/Images/New/{graphic}{graphicExt}"')
+                    snip = snip.replace("><", f">{caption}<")
+                
+                windowLog(info, f"{graphic}{graphicExt} successfully embedded in {filePath.replace('.htm','-embedded.htm')}\n")
+                newDoc += f'\n{snip}\n\n' #Add snippet to new document (KEEP THE NEWLINES HERE)
+                reportContent[graphic] = 2
 
-        else:
-            newDoc += l #No graphics in line, just add the next line as normal unless a figure tag
+            else:
+                newDoc += l #No graphics in line, just add the next line as normal unless a figure tag
+
+        except UnboundLocalError:
+            newDoc += l
 
     #Create duplicate file
     try:
@@ -621,6 +672,7 @@ def main(event):
     targetBoard = optDict['board']
 
     #Build module config and unpack
+    windowLog(info, f'Project found at {MODULE_PATH}.')
     windowLog(info, 'Building submodule config...')
     submodule_dict = buildModuleConfig(f'/{targetModule}/Content', 'submoduleConfig.json')
 
@@ -641,8 +693,8 @@ def main(event):
     replaceExistingFigures(files)
 
     #Build image dir if it doesn't exist
-    if os.path.exists(f'/{targetModule}/Content/Resources/Images/New/') == False:
-        os.mkdir(f'/{targetModule}/Content/Resources/Images/New/')
+    if os.path.exists(f'{MODULE_PATH}/Content/Resources/Images/New/') == False:
+        os.mkdir(f'{MODULE_PATH}/Content/Resources/Images/New/')
 
     try:
         boardID = mondayConfig['monday']['boardIDs'][targetBoard]
@@ -761,6 +813,27 @@ def main(event):
                     f.close() #Graphic not found in page
 
     end = time.time()
+
+    #Build file list to remove figure tags
+    windowLog(info, 'Replacing broken figure tags...')
+    if targetSubmodule:
+        dir_list = [submodule_dict[k]['path'] for k in list(submodule_dict.keys()) if targetSubmodule in submodule_dict[k]['path']]
+    else:
+        dir_list = [submodule_dict[k]['path'] for k in list(submodule_dict.keys())]
+    files = []
+    for directory in dir_list:
+        for page in os.listdir(directory):
+            if '-embedded.htm' in page:
+                files.append(os.path.join(directory, page))
+
+    for fi in files:
+        with open(fi, 'r') as f:
+            lineList = f.readlines()
+            
+        lineList = addFigureTags(lineList)
+        with open(fi, 'w') as f:
+            for line in lineList:
+                f.write(line)
 
     #Statuses are saved as 0/1/2, this is the key value map for the report
     reportRef = {
