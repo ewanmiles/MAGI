@@ -5,10 +5,12 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.ttk import Combobox
 from threading import Event, Thread
+from logWindow import LogWindow
 
 EVENT_TIMEOUT = 0.01
 POLLING_DELAY = 1000
 DESKTOP_PATH = desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+CLEAN_UP = False
 
 #Package install if necessary
 print("Checking packages...")
@@ -53,22 +55,6 @@ with open('moduleConfig.json', 'r') as f:
 ###################################################################
 
 
-def windowLog(windowLabel: tk.Label, text):
-    """
-    Really basic. Just a print statement to the console that will also update the tkinter window text.
-    text is Stringtype only.
-    """
-    if windowLabel.winfo_height() > 340: #If the frame height has been exceeded by text, clear all previous text
-        windowLabel['text'] = ''
-
-    #Update console and window
-    print(f'\n{text}')
-    windowLabel['text'] += f'\n{text}'
-
-
-###################################################################
-
-
 def writeApiLogins():
     global loginDict
 
@@ -99,9 +85,9 @@ def writeApiLogins():
     startup.destroy()
 
 startup = tk.Tk()
-startup.geometry("400x500")
-acronym = tk.Label(text="MAGI", pady=5, font=('MS Serif', 45))
-title = tk.Label(text="Madcap Automatic Graphic Implementation", pady=5, font=('MS Serif', 12))
+startup.geometry("450x500")
+acronym = tk.Label(text="MAGI", pady=5, font=('Felix Titling', 45))
+title = tk.Label(text="Madcap Automatic Graphic Implementation v2.0", pady=5, font=('Footlight MT Light', 15))
 button = tk.Button(
     text="Save details",
     width=25,
@@ -132,7 +118,7 @@ startup.mainloop()
 mondayHeaders = {"Authorization" : mondayKey}
 
 
-def fetchEntries():
+def fetchEntriesForMain():
     global optDict
     optDict = {
         'module': moduleChoice.get(),
@@ -140,6 +126,15 @@ def fetchEntries():
         'board': boardChoice.get()
     }
 
+    window.destroy()
+
+def fetchEntriesForCleanup():
+    global optDict, CLEAN_UP
+    optDict = {
+        'module': moduleChoice.get()
+    }
+
+    CLEAN_UP = True
     window.destroy()
 
 def browseFiles(label: tk.Label):
@@ -169,9 +164,9 @@ def updateSubmoduleChoices():
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
+    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
+    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
 
     for root, dirs, files in os.walk(MODULE_PATH):
         for name in dirs:
@@ -220,15 +215,22 @@ if 'loginDict' not in list(globals().keys()):
     sys.exit()
 
 window = tk.Tk()
-window.geometry("400x500")
-acronym = tk.Label(text="MAGI", pady=5, font=('MS Serif', 45))
-title = tk.Label(text="Madcap Automatic Graphic Implementation", pady=5, font=('MS Serif', 12))
+window.geometry("450x600")
+acronym = tk.Label(text="MAGI", pady=5, font=('Felix Titling', 45))
+title = tk.Label(text="Madcap Automatic Graphic Implementation v2.0", pady=5, font=('Footlight MT Light', 15))
 button = tk.Button(
     text="Add graphics",
     width=25,
     height=2,
     bg="azure",
-    command=fetchEntries,
+    command=fetchEntriesForMain,
+)
+cleanupButton = tk.Button(
+    text="Check embed stats",
+    width=25,
+    height=2,
+    bg="azure",
+    command=fetchEntriesForCleanup,
 )
 
 mTitle = tk.Label(text="Module", pady=10)
@@ -258,7 +260,8 @@ boardOptions = Combobox(window, textvariable=boardChoice, values=boards)
 
 for item in [acronym,title,mTitle,moduleOptions,pathTitle,pathSubtitle,pathButton,submTitle,submoduleOptions,bTitle,boardOptions]:
     item.pack()
-button.pack(pady=40)
+button.pack(pady=25)
+cleanupButton.pack(pady=10)
 
 window.mainloop()
 
@@ -300,7 +303,7 @@ def queryBoardID(boardName):
             with open('mondayConfig.json', 'w') as f:
                 json.dump(mondayConfig, f, indent=2)
 
-            windowLog(info, f'Board {boardName} (ID {board["id"]}) saved to the config.')
+            logger.logText(f'Board {boardName} (ID {board["id"]}) saved to the config.')
     
     return Id
 
@@ -330,7 +333,7 @@ def downloadFiles(fileList):
         for ext in extensions:
             try:
                 #Get file from API
-                response = web.get_file_by_server_relative_path(f"/sites/Part-66Project/Shared Documents/General/Modules/{module_dict[module]['name']}/Development/Graphics/New {module} Graphics/{fi}{ext}")
+                response = web.get_file_by_server_relative_path(f"/sites/MediaLibrary/Projects/Part 66/{module_dict[module]['name']}/{fi}{ext}")
                 download_path = os.path.join(buildContentPaths(fi, module)[1], f'{fi}{ext}')
 
                 with open(download_path, "wb") as local_file:
@@ -349,7 +352,7 @@ def downloadFiles(fileList):
             #This is by far the best way to check if it has been downloaded. By this point, if unsuccessful, path should have been removed above
             if os.path.exists(download_path):
                 reportContent[fi] = 1
-                windowLog(info, f'{fi}{ext} downloaded to {download_path}.')
+                logger.logText(f'{fi}{ext} downloaded to {download_path}.')
 
 
 def buildModuleConfig(path, outfile, debug=False):
@@ -368,9 +371,9 @@ def buildModuleConfig(path, outfile, debug=False):
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
+    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
+    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
 
     for root, dirs, files in os.walk(path):
         for name in dirs:
@@ -484,9 +487,10 @@ def parseSubmodule(fileName):
 
     #Centre brackets check for group X.X.X where X is any single integer
     #\D either side check for full string of any non numeric characters either side
-    subSubRegex = "^(.*?([0-9]\.[0-9]*\.[a-zA-Z0-9]).*)$"
+    #There will never be a perfect regex :(
+    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]\.[0-9]*).*)$"
+    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
 
     submodule = ''
 
@@ -544,7 +548,7 @@ def replaceExistingFigures(files):
                 f.write(newDoc)
                 f.close()
         except PermissionError:
-            info['text'] += f"\nERROR! MAGI can't access {filePath.replace('.htm', '-embedded.htm')}. This is likely because you have it open in Flare, or somewhere else. Please close the editor and try again."
+            logger.logText(f"ERROR! MAGI can't access {filePath.replace('.htm', '-embedded.htm')}. This is likely because you have it open in Flare, or somewhere else. Please close the editor and try again.")
 
 def addFigureTags(l):
     """
@@ -594,21 +598,22 @@ def embedImages(graphic, filePath):
             elif ind-1 == graphicInd: #This line has the graphic caption
                 try:
                     graphicExt = graphicReplaceMap[graphic]['ext'] #Get graphic extension from dict
-                    gPathPrefix = graphicReplaceMap[graphic]['pathPrefix']
+                    gRelPath = graphicReplaceMap[graphic]['relPath']
                 except KeyError:
-                    windowLog(info, 'Graphic extension not successfully found. It is likely the file was not downloaded. Skipping embed.')
+                    logger.logText('Graphic extension not successfully found. It is likely the file was not downloaded. Skipping embed.')
                     return None
 
                 #Build caption from line
                 caption = deleteMultiple(line_list[ind], ['<p>','</p>','  ','\n','\t','<figcaption>','</figcaption>'])
                 
                 #Build snippet from external HTML file
-                with open('baseSnippet.html', 'r') as f:
+                totalPath = os.path.join(gRelPath, f'{graphic}{graphicExt}')
+                with open('baseSnippet.html', 'r', encoding='utf8') as f:
                     snip = f.read()
-                    snip = snip.replace('src=""', f'src="{gPathPrefix}Resources/Images/New/{graphic}{graphicExt}"')
+                    snip = snip.replace('src=""', f'src="{totalPath}"')
                     snip = snip.replace("><", f">{caption}<")
                 
-                windowLog(info, f"{graphic}{graphicExt} successfully embedded in {filePath.replace('.htm','-embedded.htm')}\n")
+                logger.logText(f"{graphic}{graphicExt} successfully embedded in {filePath.replace('.htm','-embedded.htm')}\n")
                 newDoc += f'\n{snip}\n\n' #Add snippet to new document (KEEP THE NEWLINES HERE)
                 reportContent[graphic] = 2
 
@@ -624,7 +629,7 @@ def embedImages(graphic, filePath):
             f.write(newDoc)
             f.close()
     except PermissionError:
-        info['text'] += f"\nERROR! MAGI can't access {filePath.replace('.htm', '-embedded.htm')}. This is likely because you have it open in Flare, or somewhere else. Please close the editor and try again."
+        logger.logText(f"\nERROR! MAGI can't access {filePath.replace('.htm', '-embedded.htm')}. This is likely because you have it open in Flare, or somewhere else. Please close the editor and try again.")
 
 def clearEmbeddedFiles(debug=False):
     """
@@ -632,7 +637,7 @@ def clearEmbeddedFiles(debug=False):
     Optional argument, debug (bool): Prints the name of each removed file
     """
 
-    windowLog(info, "Removing previously embedded files...")
+    logger.logText("Removing previously embedded files...")
     fileCount = 0
 
     for submodule in list(submodule_dict.values()):
@@ -656,7 +661,7 @@ def clearEmbeddedFiles(debug=False):
                     if debug:
                         print(f"Removed {os.path.join(submodule['path'],file)}")
 
-    windowLog(info, f"\nRemoved {fileCount} previous files.")
+    logger.logText(f"\nRemoved {fileCount} previous files.")
 
 
 ###################################################################
@@ -672,15 +677,15 @@ def main(event):
     targetBoard = optDict['board']
 
     #Build module config and unpack
-    windowLog(info, f'Project found at {MODULE_PATH}.')
-    windowLog(info, 'Building submodule config...')
+    logger.logText(f'Project found at {MODULE_PATH}.')
+    logger.logText('Building submodule config...')
     submodule_dict = buildModuleConfig(f'/{targetModule}/Content', 'submoduleConfig.json')
 
     #Clear any previously embedded files
     clearEmbeddedFiles()
 
     #Build file list to remove figure tags
-    windowLog(info, 'Removing figure tags...')
+    logger.logText('Removing figure tags...')
     if targetSubmodule:
         dir_list = [submodule_dict[k]['path'] for k in list(submodule_dict.keys()) if targetSubmodule in submodule_dict[k]['path']]
     else:
@@ -699,7 +704,7 @@ def main(event):
     try:
         boardID = mondayConfig['monday']['boardIDs'][targetBoard]
     except KeyError:
-        windowLog(info, f"\nBoard {targetBoard} not found in config. Sending query to Monday for board ID...")
+        logger.logText(f"\nBoard {targetBoard} not found in config. Sending query to Monday for board ID...")
         boardID = queryBoardID(targetBoard)
         if boardID == None:
             raise ValueError(f'Unable to find the board {targetBoard} on Monday. Please try another name, or check Monday.')
@@ -719,7 +724,7 @@ def main(event):
     tempStr = '\n##############################################################'
     tempStr += f'\nSending Monday query to board {targetBoard}, ID {boardID}...'
     tempStr += '\n##############################################################\n'
-    windowLog(info, tempStr)
+    logger.logText(tempStr)
 
     #Post request, parse JSON response
     r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
@@ -727,7 +732,7 @@ def main(event):
 
     #Build a list of item names from the Monday board
     targetGraphics = buildItemList(returned, targetBoard)
-    windowLog(info, f'{spConfig["user"]} logging in to SharePoint...')
+    logger.logText(f'{spConfig["user"]} logging in to SharePoint...')
 
     #Slice for targeted submodule if set
     if targetSubmodule:
@@ -750,7 +755,7 @@ def main(event):
     #Time file download and embed
     start = time.time()
 
-    info['text'] += '\n' #Aesthetic for logger
+    logger.logText('') #Aesthetic for logger
     downloadFiles(targetGraphics)
 
     #Cycle through graphics, if submodule not correctly parsed, change report content to parser error
@@ -765,23 +770,24 @@ def main(event):
     targetGraphics = list(graphicReplaceMap.keys())
     fileCount = len(targetGraphics) #For report
 
-
+    newImgsFolder = f'{MODULE_PATH}/Content/Resources/Images/New/'
     for graphic in targetGraphics:
         parsed = parseSubmodule(graphic) #Get module/submodule
+        graphicReplaceMap[graphic]['relPath'] = os.path.relpath(newImgsFolder, submodule_dict[parsed[1]]['path']) #Get relative path for img tag src
 
-        #Find if file or dir from submodule config, add path prefix (../ or ../../ typically) accordingly
-        graphicReplaceMap[graphic]['pathPrefix'] = parsed[1].count('.')*'../' if submodule_dict[parsed[1]]['type'] == 'dir' else (parsed[1].count('.')-1)*'../'
-
-    
+    #Create results data folder if non-existent    
     if os.path.exists(f'{DESKTOP_PATH}/FlareResults') == False:
         os.mkdir(f'{DESKTOP_PATH}/FlareResults')
 
     with open(f'{DESKTOP_PATH}/FlareResults/grm.json', 'w') as fp:
             json.dump(graphicReplaceMap, fp, indent=2) #Save external copy of graphicReplaceMap to grm.json
-    windowLog(info, 'The Graphic Replace Map has been written to grm.json for checking.')
+    logger.logText('The Graphic Replace Map has been written to grm.json for checking.')
 
-    for ind, fi in enumerate(targetGraphics):
-        tempPath = submodule_dict[graphicReplaceMap[fi]['submodule']]['path'] #Get path to submodule for graphic
+    for fi in targetGraphics:
+        try:
+            tempPath = submodule_dict[graphicReplaceMap[fi]['submodule']]['path'] #Get path to submodule for graphic
+        except KeyError:
+            logger.logText(f'Could not build a starter path for {fi}. Skipping...')
 
         if os.path.isdir(tempPath):
             for page in os.listdir(tempPath): #If submodule is folder, go through each page
@@ -793,7 +799,7 @@ def main(event):
                 with open(pagePath, 'r', encoding='utf8') as f:
                     content = f.read()
                     if fi in content:
-                        windowLog(info, f'Embedding {fi} to {pagePath}...') #Find graphic name in page, embed
+                        logger.logText(f'Embedding {fi} to {pagePath}...') #Find graphic name in page, embed
                         embedImages(fi, pagePath)
                     else:
                         f.close() #Graphic not found in page
@@ -807,7 +813,7 @@ def main(event):
             with open(pagePath, 'r', encoding='utf8') as f:
                 content = f.read()
                 if fi in content:
-                    windowLog(info, f'Embedding {fi} to {pagePath}...') #Find graphic name in page, embed
+                    logger.logText(f'Embedding {fi} to {pagePath}...') #Find graphic name in page, embed
                     embedImages(fi, pagePath)
                 else:
                     f.close() #Graphic not found in page
@@ -815,7 +821,7 @@ def main(event):
     end = time.time()
 
     #Build file list to remove figure tags
-    windowLog(info, 'Replacing broken figure tags...')
+    logger.logText('Replacing broken figure tags...')
     if targetSubmodule:
         dir_list = [submodule_dict[k]['path'] for k in list(submodule_dict.keys()) if targetSubmodule in submodule_dict[k]['path']]
     else:
@@ -827,11 +833,11 @@ def main(event):
                 files.append(os.path.join(directory, page))
 
     for fi in files:
-        with open(fi, 'r') as f:
+        with open(fi, 'r', encoding='utf8') as f:
             lineList = f.readlines()
             
         lineList = addFigureTags(lineList)
-        with open(fi, 'w') as f:
+        with open(fi, 'w', encoding='utf8') as f:
             for line in lineList:
                 f.write(line)
 
@@ -843,7 +849,7 @@ def main(event):
         2: 'Embedded'
     }
 
-    windowLog(info, 'Writing graphic statuses to a CSV...')
+    logger.logText('Writing graphic statuses to a CSV...')
     time.sleep(3)
 
     #Writing graphics and their status to csv
@@ -851,7 +857,7 @@ def main(event):
     col2 = [reportRef[reportContent[i]] for i in col1]
     excelData = pd.DataFrame([col1, col2]).transpose()
     excelData.to_csv(f'{DESKTOP_PATH}/FlareResults/embeddingReport.csv', index=None, header=None)
-    windowLog(info, f'The report data is available at {DESKTOP_PATH}/FlareResults/embeddingReport.csv.')
+    logger.logText(f'The report data is available at {DESKTOP_PATH}/FlareResults/embeddingReport.csv.')
 
     #Plot bar chart of embedded/downloaded/not found
     plt.figure()
@@ -864,13 +870,13 @@ def main(event):
     plt.ylabel('Frequency')
     plt.xticks(ticks=[0.5,1.5,2.5,3.5],labels=['Parser Error','Not Found','Downloaded','Embedded'])
     plt.savefig(f'{DESKTOP_PATH}/FlareResults/importResults.pdf')
-    windowLog(info, f'A bar graph for the graphics report is available at {DESKTOP_PATH}/FlareResults/importResults.pdf.')
+    logger.logText(f'A bar graph for the graphics report is available at {DESKTOP_PATH}/FlareResults/importResults.pdf.')
 
-    windowLog(info, 'Writing report...')
+    logger.logText('Writing report...')
     time.sleep(3)
 
     #Write report to txt file
-    with open(f'{DESKTOP_PATH}/FlareResults/embeddingReport.txt', 'w') as f:
+    with open(f'{DESKTOP_PATH}/FlareResults/embeddingReport.txt', 'w', encoding='utf8') as f:
 
         #Count of file statuses
         errorCount = ('Parser Error', list(reportContent.values()).count(-1))
@@ -884,7 +890,10 @@ def main(event):
         
         f.write(f'{errorCount[0]}: {errorCount[1]} (Not included in the % below)\n')
         for count in [unfoundCount, downCount, embedCount]:
-            f.write(f'{count[0]}: {count[1]} ({(100*count[1])/fileCount:.1f}%)\n')
+            try:
+                f.write(f'{count[0]}: {count[1]} ({(100*count[1])/fileCount:.1f}%)\n')
+            except ZeroDivisionError:
+                f.write(f'0 (% N/A)\n')
             
         f.write('\n')
 
@@ -893,7 +902,7 @@ def main(event):
 
         f.close() #Just to make sure
 
-    windowLog(info, f'A full report of the graphic embed is available at {DESKTOP_PATH}/FlareResults/embeddingReport.txt.')
+    logger.logText(f'A full report of the graphic embed is available at {DESKTOP_PATH}/FlareResults/embeddingReport.txt.')
     time.sleep(5)
 
     event.set() #Signal to threader that process is complete
@@ -901,60 +910,192 @@ def main(event):
 ##########################################################################
 
 
-def checkStatus(logger, event):
-    event_is_set = event.wait(EVENT_TIMEOUT)
-    if event_is_set:
-        logger.destroy()
+def clean_up(event):
+    """
+    Function that builds data profile of images already in the New folder, without API contact
+    - Prints to logger the percentage of successfully embedded images
+    - Generates txt report for images that are not used
+    - Generates json for more in depth info
+    """
+
+    targetModule = optDict['module']
+
+    try:
+        statsWindow.logText(f"Scanning the docs in {MODULE_PATH} for project {targetModule}...")
+    except NameError:
+        statsWindow.logText(f"You didn't select a module folder! Please try again, selecting a folder with a valid '.flprj' file inside.")
+        event.set()
+        return None
+
+    #Pure aesthetics, who would believe this could be done in less than a second!!
+    time.sleep(2)
+
+    #Get module folder from path selected in UI
+    if not any(f.endswith('.flprj') for f in os.listdir(MODULE_PATH)):
+        statsWindow.logText(f'Unable to find a project at {MODULE_PATH}. Please try again, selecting a folder with a valid ".flprj" file inside.')
+        event.set() #Escapes thread back to window main loop
+        return None
+
+    #Get all images with png/jpe?g extensions from Images/New
+    images = [i for i in os.listdir(f'{MODULE_PATH}/Content/Resources/Images/New') if i.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+    #Full scan of all docs in project
+    htmlCollection = []
+    for root, dirs, files in os.walk(f'{MODULE_PATH}/Content'):
+        for f in files:
+            if f.endswith('.htm'):
+                path = os.path.join(root, f)
+                if 'Welcome' not in path:
+                    htmlCollection.append(path)
+
+    #Builds dict of doc: images; e.g. {HTM FILE: [IMG 1, IMG 2, ...], ...}
+    initialDict = {}
+    for doc in htmlCollection:
+        with open(doc, 'r', encoding='utf-8') as d: #Read each htm file as one string
+            asString = d.read()
+
+        found = [i for i in images if os.path.splitext(i)[0] in asString] #Images found in this htm
+        temp = {}
+
+        if len(found) > 0:
+            for img in found:
+                temp[img] = asString[:asString.find(img)].count('\n')
+                
+            initialDict[doc] = temp
+
+    #Builds dict of img: {doc, line, embedded?}; e.g. {IMG: {'doc': HTM FILE, 'line': LINE, 'emb': True}, ...}
+    resultDict = {}
+    for doc in list(initialDict.keys()): #Get htm file names from previous dict
+        graphics = list(initialDict[doc].keys())
+        inds = list(initialDict[doc].values())
+
+        with open(doc, 'r', encoding='utf-8') as f: #Now unpack files as list of lines
+            lineList = f.readlines()
+
+        for g, i in zip(graphics, inds):
+            resultDict[g] = {
+                'doc': doc,
+                'ind': i,
+                'emb': False
+            }
+
+            if '<img' in lineList[i]: #Signifies already properly embedded in img tag
+                resultDict[g]['emb'] = True
+
+    statsWindow.logText(f'There are a total of {len(images)} images (ending PNG, JPG, JPEG) in the New folder.')
+
+    dictImages = list(resultDict.keys())
+
+    if len(images) > 0:
+        percent = 100*(len(dictImages)/len(images)) #Images found in project (embedded or not)
+        statsWindow.logText(f'{percent:.2f}% of the images were detected in the project!')
     else:
-        logger.after(POLLING_DELAY, checkStatus, logger, event)
+        statsWindow.logText('No images were found in the New folder.')
 
-if 'optDict' not in list(globals().keys()):
+    #Images not found in project but ARE in New
+    notFound = [i for i in images if i not in dictImages]
+    statsWindow.logText(f'{len(notFound)} images were not found in the project.')
+
+    #Count images found but not embedded (failCount)
+    failCount = 0
+    fails = []
+    for i in resultDict.items():
+        if i[1]['emb'] == False:
+            failCount += 1
+            fails.append(f"{i[0]}:\n\t\tPAGE:{i[1]['doc']}\n\t\tLINE:{i[1]['ind']}")
+
+    statsWindow.logText(f'\nImages failed to embed: {failCount}')
+    statsWindow.logText(f'\n\nTOTAL SUCCESS RATE: {100*((len(dictImages) - failCount)/len(images)):.2f}%\n\n')
+    statsWindow.logText('See the embedStats JSON and Unembedded TXT files for the full information, both under FlareResults on your Desktop.')
+
+    if os.path.exists(f'{DESKTOP_PATH}/FlareResults') == False:
+        os.mkdir(f'{DESKTOP_PATH}/FlareResults')
+
+    #Stats JSON saved to FlareResults
+    with open(f'{DESKTOP_PATH}/FlareResults/embedStats.json', 'w') as f:
+        json.dump(resultDict, f, indent=2)
+
+    #Unembedded image TXT report
+    with open(f'{DESKTOP_PATH}/FlareResults/Unembedded.txt', 'w', encoding='utf-8') as f:
+        f.write(f'NOT FOUND IN {targetModule} PROJECT:\n')
+        if len(notFound) > 0:
+            for i in notFound:
+                f.write(f'\t{i}\n')
+        else:
+            f.write('\tNone\n')
+        
+        f.write(f'\n\nFAILED EMBED IN {targetModule}:\n')
+        if len(fails) > 0:
+            for i in fails:
+                f.write(f'\t{i}\n')
+        else:
+            f.write('\tNone\n')
+
+    event.set() #Signal to threader that process is complete
+
+
+##########################################################################
+
+if CLEAN_UP:
+    def checkStatus(logger, event):
+        event_is_set = event.wait(EVENT_TIMEOUT)
+        if event_is_set:
+            logger.setButtonText('Ok')
+        else:
+            logger.after(POLLING_DELAY, checkStatus, logger, event)
+
+    if 'optDict' not in list(globals().keys()):
+        sys.exit()
+
+    #Log Windows are outsourced to an external class in logWindow.py
+    statsWindow = LogWindow("450x500", (390,270))
+
+    event = Event()
+    thread = Thread(target=clean_up, args=(event,))
+    checkStatus(statsWindow, event)  # Starts the polling of main() status
+    thread.start()
+
+    statsWindow.mainloop()
+
+else:
+    def checkStatus(logger, event):
+        event_is_set = event.wait(EVENT_TIMEOUT)
+        if event_is_set:
+            logger.destroy()
+        else:
+            logger.after(POLLING_DELAY, checkStatus, logger, event)
+
+    if 'optDict' not in list(globals().keys()):
+        sys.exit()
+
+    #Log Windows are outsourced to an external class in logWindow.py
+    logger = LogWindow("600x600", (550, 360))
+
+    event = Event()
+    thread = Thread(target=main, args=(event,))
+    checkStatus(logger, event)  # Starts the polling of main() status
+    thread.start()
+
+    logger.mainloop()
+
+    final = tk.Tk()
+    final.geometry("540x210")
+    title = tk.Label(text="Graphics complete!", pady=5, font=('MS Serif', 12))
+    subtitle = tk.Label(text="Make sure to check your project in Flare to see which files have been successfully embedded.", pady=5)
+    moreInfo = tk.Label(text="Report: 'Desktop/FlareResults/embeddingReport.txt'\nSpreadsheet: 'Desktop/FlareResults/embeddingReport.csv'\nGraph: 'Desktop/FlareResults/importResults.pdf'")
+    button = tk.Button(
+        text="Ok",
+        width=20,
+        height=2,
+        bg="azure",
+        command=final.destroy
+    )
+
+    title.pack()
+    subtitle.pack()
+    moreInfo.pack()
+    button.pack(pady=30)
+
+    final.mainloop()
+
     sys.exit()
-
-logger = tk.Tk()
-logger.geometry("600x600")
-acronym = tk.Label(text="MAGI", pady=5, font=('MS Serif', 45))
-title = tk.Label(text="Madcap Automatic Graphic Implementation", pady=5, font=('MS Serif', 12))
-button = tk.Button(
-    text="Cancel",
-    width=25,
-    height=2,
-    bg="azure",
-    command=sys.exit,
-)
-log = tk.Frame(master=logger, width=550, height=360, bg="white")
-info = tk.Label(master=log, text="Starting the process...", bg="white", justify='left', wraplength=540)
-for item in [acronym,title,log]:
-    item.pack()
-info.place(x=0, y=0)
-
-button.pack(pady=40)
-
-event = Event()
-thread = Thread(target=main, args=(event,))
-checkStatus(logger, event)  # Starts the polling of main() status
-thread.start()
-
-logger.mainloop()
-
-final = tk.Tk()
-final.geometry("540x210")
-title = tk.Label(text="Graphics complete!", pady=5, font=('MS Serif', 12))
-subtitle = tk.Label(text="Make sure to check your project in Flare to see which files have been successfully embedded.", pady=5)
-moreInfo = tk.Label(text="Report: 'Desktop/FlareResults/embeddingReport.txt'\nSpreadsheet: 'Desktop/FlareResults/embeddingReport.csv'\nGraph: 'Desktop/FlareResults/importResults.pdf'")
-button = tk.Button(
-    text="Ok",
-    width=20,
-    height=2,
-    bg="azure",
-    command=final.destroy
-)
-
-title.pack()
-subtitle.pack()
-moreInfo.pack()
-button.pack(pady=30)
-
-final.mainloop()
-
-sys.exit()
