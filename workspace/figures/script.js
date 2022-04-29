@@ -48,3 +48,8 @@ const generateFigure = input => {
 
     return `<figure class="${FIGURE_CLASS}" ${conditions}>\n<img src="../../Resources/Images/New/${img}.png"/>\n<figcaption>${caption}</figcaption>\n</figure>`
 };
+
+const copyToClipboard = () => {
+    var copyText = document.getElementById('output');
+    navigator.clipboard.writeText(copyText.innerText); //Copy textarea value
+}

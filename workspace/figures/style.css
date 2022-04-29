@@ -5,6 +5,8 @@ body {
 
 textarea {
     text-align: left;
+    font-family: 'Lucida Console';
+    font-size: 15px;
     width: 75%;
     height: 200px;
     margin: 20px auto;
@@ -21,4 +23,18 @@ textarea {
     border: solid 2px #4db8ff;
     border-radius: 10px;
     padding: 10px;
+}
+
+button.copy {
+    padding: 8px;
+    border: solid 2px #006bb3;
+    font-size: 15px;
+    font-family: 'Lucida Sans';
+    border-radius: 10px;
+    background: transparent;
+    transition: 0.1s;
+}
+
+button.copy:active {
+    background: rgba(0,0,0,0.1);
 }
