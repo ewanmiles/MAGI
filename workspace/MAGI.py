@@ -11,6 +11,7 @@ EVENT_TIMEOUT = 0.01
 POLLING_DELAY = 1000
 DESKTOP_PATH = desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 CLEAN_UP = False
+UPDATE_MONDAY = False
 
 #Package install if necessary
 print("Checking packages...")
@@ -87,7 +88,7 @@ def writeApiLogins():
 startup = tk.Tk()
 startup.geometry("450x500")
 acronym = tk.Label(text="MAGI", pady=5, font=('Felix Titling', 45))
-title = tk.Label(text="Madcap Automatic Graphic Implementation v2.0", pady=5, font=('Footlight MT Light', 15))
+title = tk.Label(text="Madcap Automatic Graphic Implementation v2.1", pady=5, font=('Footlight MT Light', 15))
 button = tk.Button(
     text="Save details",
     width=25,
@@ -137,6 +138,15 @@ def fetchEntriesForCleanup():
     CLEAN_UP = True
     window.destroy()
 
+def fetchEntriesForUpdate():
+    global optDict, UPDATE_MONDAY
+    optDict = {
+        'module': moduleChoice.get()
+    }
+
+    UPDATE_MONDAY = True
+    window.destroy()
+
 def browseFiles(label: tk.Label):
     """
     Opens a file dialog through tkinter to browse for the module folder; input
@@ -164,9 +174,9 @@ def updateSubmoduleChoices():
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
+    subSubRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
+    subRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?).*)$"
 
     for root, dirs, files in os.walk(MODULE_PATH):
         for name in dirs:
@@ -215,9 +225,9 @@ if 'loginDict' not in list(globals().keys()):
     sys.exit()
 
 window = tk.Tk()
-window.geometry("450x600")
+window.geometry("450x700")
 acronym = tk.Label(text="MAGI", pady=5, font=('Felix Titling', 45))
-title = tk.Label(text="Madcap Automatic Graphic Implementation v2.0", pady=5, font=('Footlight MT Light', 15))
+title = tk.Label(text="Madcap Automatic Graphic Implementation v2.1", pady=5, font=('Footlight MT Light', 15))
 button = tk.Button(
     text="Add graphics",
     width=25,
@@ -231,6 +241,13 @@ cleanupButton = tk.Button(
     height=2,
     bg="azure",
     command=fetchEntriesForCleanup,
+)
+mondayButton = tk.Button(
+    text="Update Monday",
+    width=25,
+    height=2,
+    bg="azure",
+    command=fetchEntriesForUpdate,
 )
 
 mTitle = tk.Label(text="Module", pady=10)
@@ -262,6 +279,7 @@ for item in [acronym,title,mTitle,moduleOptions,pathTitle,pathSubtitle,pathButto
     item.pack()
 button.pack(pady=25)
 cleanupButton.pack(pady=10)
+mondayButton.pack(pady=15)
 
 window.mainloop()
 
@@ -342,7 +360,6 @@ def downloadFiles(fileList):
                     graphicReplaceMap[fi]['ext'] = ext #Add graphic's extension to dict map for reference
 
             except:
-                #print(f'{fi}{ext} not found.') #Try/except should catch files that don't exist in SharePoint (wrong extension, wrong name, etc)
                 try:
                     os.remove(download_path) #File is already written in local ready to receive download, delete as file not found
                 except (FileNotFoundError, UnboundLocalError) as e:
@@ -371,9 +388,9 @@ def buildModuleConfig(path, outfile, debug=False):
     #Centre brackets check for group X.X.X where X is any single integer
     #.* either side check for full string of literally any other characters (Watch out for this)
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
+    subSubRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}\(?[a-zA-Z]?\)?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
+    subRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}\(?[a-zA-Z]?\)?).*)$"
 
     for root, dirs, files in os.walk(path):
         for name in dirs:
@@ -488,9 +505,9 @@ def parseSubmodule(fileName):
     #Centre brackets check for group X.X.X where X is any single integer
     #\D either side check for full string of any non numeric characters either side
     #There will never be a perfect regex :(
-    subSubRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
+    subSubRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?\.[0-9]*[a-zA-Z]?).*)$"
     #Now checking for X.X in centre
-    subRegex = "^(.*?([0-9]*\.[0-9]*[a-zA-Z]?).*)$"
+    subRegex = "^(.*?([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?).*)$"
 
     submodule = ''
 
@@ -603,8 +620,18 @@ def embedImages(graphic, filePath):
                     logger.logText('Graphic extension not successfully found. It is likely the file was not downloaded. Skipping embed.')
                     return None
 
-                #Build caption from line
-                caption = deleteMultiple(line_list[ind], ['<p>','</p>','  ','\n','\t','<figcaption>','</figcaption>'])
+                #Check for MC conditions
+                conditions = None
+                condRegex = 'MadCap:conditions=".*"'
+                found = re.findall(condRegex, line_list[ind])
+                
+                #Only worry about one condition set found                
+                if len(found) == 1:
+                    conditions = found[0]
+                    caption = deleteMultiple(line_list[ind], [f'<p {conditions}>', '</p>','  ','\n','\t','<figcaption>','</figcaption>'])
+                else:
+                    #Build caption from line without conditions
+                    caption = deleteMultiple(line_list[ind], ['<p>','</p>','  ','\n','\t','<figcaption>','</figcaption>'])
                 
                 #Build snippet from external HTML file
                 totalPath = os.path.join(gRelPath, f'{graphic}{graphicExt}')
@@ -612,6 +639,10 @@ def embedImages(graphic, filePath):
                     snip = f.read()
                     snip = snip.replace('src=""', f'src="{totalPath}"')
                     snip = snip.replace("><", f">{caption}<")
+
+                    #Add any conditions
+                    if conditions != None:
+                        snip = snip.replace('<figure class="fortyPercent">', f'<figure {conditions} class="fortyPercent">')
                 
                 logger.logText(f"{graphic}{graphicExt} successfully embedded in {filePath.replace('.htm','-embedded.htm')}\n")
                 newDoc += f'\n{snip}\n\n' #Add snippet to new document (KEEP THE NEWLINES HERE)
@@ -1034,6 +1065,126 @@ def clean_up(event):
     event.set() #Signal to threader that process is complete
 
 
+def updateMonday(event):
+
+    targetModule = optDict['module']
+
+    try:
+        updateWindow.logText(f"Scanning the docs in {MODULE_PATH} for project {targetModule}...")
+    except NameError:
+        updateWindow.logText(f"You didn't select a module folder! Please try again, selecting a folder with a valid '.flprj' file inside.")
+        event.set()
+        return None
+
+    #Get module folder from path selected in UI
+    if not any(f.endswith('.flprj') for f in os.listdir(MODULE_PATH)):
+        statsWindow.logText(f'Unable to find a project at {MODULE_PATH}. Please try again, selecting a folder with a valid ".flprj" file inside.')
+        event.set() #Escapes thread back to window main loop
+        return None
+
+    updateWindow.logText('Re-gathering image names from Monday...')
+
+    boardID = mondayConfig['monday']['boardIDs']['Upload to Flare']
+
+    #Get item names AND IDs from the Upload to Flare board (Only ever check this board)
+    queryFirstLine = "{{ boards (ids:[{0}]) {{".format(boardID)
+    query = queryFirstLine + """name
+            items {
+
+                name
+                id
+                } 
+            } 
+        }"""
+    data = {'query' : query}
+
+    #Post request, parse JSON response
+    r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
+    returned = r.json()['data']['boards']
+
+    #Build a list of item names from the Monday board
+    targetGraphics = [(i['name'], i['id']) for i in returned[fetchDataIndex(returned, 'Upload to Flare')]['items']]
+    graphicNames = [i[0] for i in targetGraphics]
+
+    ##AT THE POINT OF WRITING THIS FUNCTION I'M UNDER TIME CONSTRAINTS SO I'M BLOCK COPYING CODE. LAZY, I KNOW
+    ##BUT IT RUNS SO QUICKLY FOR OUR PURPOSES THAT IT DOESN'T REALLY MATTER RIGHT NOW
+    #Get all images with png/jpe?g extensions from Images/New
+    images = [i for i in os.listdir(f'{MODULE_PATH}/Content/Resources/Images/New') if i.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+    #Full scan of all docs in project
+    htmlCollection = []
+    for root, dirs, files in os.walk(f'{MODULE_PATH}/Content'):
+        for f in files:
+            if f.endswith('.htm'):
+                path = os.path.join(root, f)
+                if 'Welcome' not in path:
+                    htmlCollection.append(path)
+
+    #Builds dict of doc: images; e.g. {HTM FILE: [IMG 1, IMG 2, ...], ...}
+    initialDict = {}
+    for doc in htmlCollection:
+        with open(doc, 'r', encoding='utf-8') as d: #Read each htm file as one string
+            asString = d.read()
+
+        found = [i for i in images if os.path.splitext(i)[0] in asString] #Images found in this htm
+        temp = {}
+
+        if len(found) > 0:
+            for img in found:
+                temp[img] = asString[:asString.find(img)].count('\n')
+                
+            initialDict[doc] = temp
+
+    #Builds dict of img: {doc, line, embedded?}; e.g. {IMG: {'doc': HTM FILE, 'line': LINE, 'emb': True}, ...}
+    resultDict = {}
+    for doc in list(initialDict.keys()): #Get htm file names from previous dict
+        graphics = list(initialDict[doc].keys())
+        inds = list(initialDict[doc].values())
+
+        with open(doc, 'r', encoding='utf-8') as f: #Now unpack files as list of lines
+            lineList = f.readlines()
+
+        for g, i in zip(graphics, inds):
+            resultDict[g] = {
+                'doc': doc,
+                'ind': i,
+                'emb': False
+            }
+
+            if '<img' in lineList[i]: #Signifies already properly embedded in img tag
+                resultDict[g]['emb'] = True
+
+    #Get all definitely embedded images from dict
+    embeddedImages = [os.path.splitext(i[0])[0] for i in list(resultDict.items()) if i[1]['emb'] == True]
+
+    #Match them to graphics on Upload to Flare board
+    matching = [i for i in embeddedImages if i in graphicNames]
+    newStatus = "Media Inserted"
+
+    if len(matching) < 1:
+        updateWindow.logText('\nThe Upload to Flare board looks up to date! No images were found on the board that have been embedded already.')
+
+    for i in graphicNames:
+        if i in embeddedImages:
+            print(f'FOUND: {i}')
+
+    for name in matching:
+        graphicID = [i[1] for i in targetGraphics if i[0] == name][0]  #Get monday item ID, Lazy and intesive way to do it but pretty harmless here
+        
+        updateWindow.logText(f'\nBOARD Upload To Flare / {boardID}:\n\tChanging Status of {name} / {graphicID} to {newStatus}\n')
+
+        #Request to change status of each item
+        query = 'mutation {{change_simple_column_value (board_id: {0}, item_id: {1}, column_id: "status", value: "{2}") {{id}} }}'.format(boardID, graphicID, newStatus)
+
+        #Post request!
+        data = {'query' : query}
+        r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
+
+    updateWindow.logText('\nThe process is now complete! You can close the window :)\n')
+
+    event.set() #Signal to threader that process is complete
+
+
 ##########################################################################
 
 if CLEAN_UP:
@@ -1048,14 +1199,35 @@ if CLEAN_UP:
         sys.exit()
 
     #Log Windows are outsourced to an external class in logWindow.py
-    statsWindow = LogWindow("450x500", (390,270))
+    statsWindow = LogWindow("450x600", (390,270))
 
     event = Event()
     thread = Thread(target=clean_up, args=(event,))
-    checkStatus(statsWindow, event)  # Starts the polling of main() status
+    checkStatus(statsWindow, event)  # Starts the polling of clean_up() status
     thread.start()
 
     statsWindow.mainloop()
+
+elif UPDATE_MONDAY:
+    def checkStatus(logger, event):
+        event_is_set = event.wait(EVENT_TIMEOUT)
+        if event_is_set:
+            logger.setButtonText('Ok')
+        else:
+            logger.after(POLLING_DELAY, checkStatus, logger, event)
+
+    if 'optDict' not in list(globals().keys()):
+        sys.exit()
+
+    #Log Windows are outsourced to an external class in logWindow.py
+    updateWindow = LogWindow("450x600", (390,270))
+
+    event = Event()
+    thread = Thread(target=updateMonday, args=(event,))
+    checkStatus(updateWindow, event)  # Starts the polling of updateMonday() status
+    thread.start()
+
+    updateWindow.mainloop()
 
 else:
     def checkStatus(logger, event):

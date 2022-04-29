@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Figure Generator</title>
+        <link href="style.css" type="text/css" rel="stylesheet"/>
+        <script src="script.js" defer="defer"></script>
+    </head>
+    
+    <body>
+        <h1>Figure HTML Generator</h1>
+        <h3>Generate figure HTML for manual graphic amends</h3>
+        <p>Simply paste the raw HTML of the filename and the caption and watch as a figure is generated for you!</p>
+
+        <textarea id="input" oninput="detectTextArea(this)"></textarea>
+
+        <h3>Figure Class</h3>
+        <div>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="twentyFivePercent">
+            <label for="twentyFivePercent">25%</label>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="thirtyThreePercent">
+            <label for="thirtyThreePercent">33%</label>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="fortyPercent">
+            <label for="fortyPercent">40%</label>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="fiftyPercent">
+            <label for="fiftyPercent">50%</label>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="sixtySixPercent">
+            <label for="sixtySixPercent">66%</label>
+            <input onchange="detectRadio(this)" type="radio" name="figureClass" value="seventyFivePercent">
+            <label for="seventyFivePercent">75%</label>
+        </div>
+
+        <div id="output">
+            Enter a valid set of p tags to see the results!
+        </div>
+    </body>
+</html>
