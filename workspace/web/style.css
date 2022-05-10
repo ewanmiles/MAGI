@@ -1,0 +1,249 @@
+@font-face {
+    font-family: 'UbuntuLight';
+    src: url(fonts/Ubuntu-Light.ttf);
+  }
+
+body {
+    font-family: 'UbuntuLight';
+    background-image: linear-gradient(to top, rgb(0,0,0), rgba(0,0,0,0.7));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: white;
+    height: 800px;
+}
+
+h1 {
+    font-size: 7vh;
+}
+
+h2 {
+    font-size: 3vh;
+    margin: 10px 0;
+}
+
+h4 {
+    font-size: 2vh;
+    text-align: right;
+}
+
+.flexeven {
+    width: 95%;
+    display: flex;
+    justify-content: space-evenly;
+    margin: 0 auto;
+        
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    color: aqua;
+    flex-grow: 1;
+    border-bottom: solid 2px aqua;
+}
+
+.header h1, .header h2, .header h4 {
+    margin: 0;
+}
+
+.loginOptions {
+    flex-basis: 60%;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 10px;
+}
+
+.loginOptions label {
+    padding: 5px 0;
+}
+
+.loginOptions input, .checkGroup select, .checkGroup input {
+    border: solid 1px aqua;
+    background: black;
+    color: white;
+    border-radius: 20px;
+    padding: 5px;
+    font-family: 'UbuntuLight';
+}
+
+.loginOptions button {
+    margin: 15px auto 0;
+    border: solid 1px aqua;
+    color: white;
+    background: black;
+    font-family: 'UbuntuLight';
+    border-radius: 20px;
+    padding: 5px;
+}
+
+.actionOptions {
+    flex-basis: 40%;
+    padding: 15px 10px;
+}
+
+.actionOptions div {
+    padding: 10px;
+    font-size: 3vh;
+}
+
+#logWindow {
+    flex-basis: 50%;
+    background: white;
+    color: black;
+    margin: 10px;
+    border: solid 2px aqua;
+    border-radius: 10px;
+    width: calc(100% + 15px);
+    padding: 5px 20px 5px 5px;
+    overflow-y: scroll;
+    height: 32vh;
+}
+
+#embedding {
+    flex-basis: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#embedding button {
+    background: aqua;
+    color: black;
+    font-family: 'UbuntuLight';
+    font-weight: bold;
+    margin: 5px auto 10px;
+    padding: 5px;
+    width: 90%;
+    border-radius: 10px;
+}
+
+#embedding button:active, .loginOptions button:active {
+    background: #0077BB;
+}
+
+.radioGroup {
+    border-bottom: solid 2px aqua;
+    margin: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+}
+
+.checkGroup {
+    margin: 10px;
+    width: 100%;
+}
+
+.radioGroup > div {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 0;
+}
+
+.checkGroup .flexeven div {
+    display: flex;
+    flex-direction: column;
+    width: 45%;
+    padding: 5px 0;
+}
+
+.checkGroup label {
+    padding-bottom: 5px;
+}
+
+/*Second horizontal block containing login, actions*/
+.mainOptions {
+    display: flex;
+    flex-grow: 3;
+    border-bottom: solid 2px aqua;
+}
+
+/*Third horizontal block containing log window, action specifics*/
+.mainBody {
+    display: flex;
+    flex-grow: 7;
+}
+
+/* Image download UI classes */
+.pending {
+    padding: 10px;
+    border-top: solid 1px #bfbfbf;
+    border-bottom: solid 1px #bfbfbf;
+    background: #d9d9d9;
+    word-break: break-all;
+}
+
+.downloading {
+    padding: 10px;
+    border-top: solid 1px #ffff80;
+    border-bottom: solid 1px #ffff80;
+    background: #ffffb3;
+    word-break: break-all;
+}
+
+.failed {
+    padding: 10px;
+    border-top: solid 1px #ff8080;
+    border-bottom: solid 1px #ff8080;
+    background: #ffb3b3;
+    word-break: break-all;
+}
+
+.downloaded {
+    padding: 10px;
+    border-top: solid 1px #33cc33;
+    border-bottom: solid 1px #33cc33;
+    background: #b3ffb3;
+    word-break: break-all;
+}
+
+.pending p, .downloading p, .failed p, .downloaded p {
+    margin: 5px;
+}
+
+.pending p::first-letter, .downloading p::first-letter, .failed p::first-letter, .downloaded p::first-letter {
+    text-transform: capitalize;
+} 
+
+.pending span, .downloading span, .failed span, .downloaded span {
+    font-weight: bold;
+}
+
+/* Monday update UI classes */
+.mondayUpdate {
+    padding: 10px;
+    border-top: solid 1px #e23df5;
+    border-bottom: solid 1px #e23df5;
+    background: #e493ed;
+    word-break: break-all;
+}
+
+.mondayUpdate span {
+    font-weight: bold;
+}
+
+.mondayUpdate p {
+    font-size: 1.75vh;
+    margin: 5px;
+}
+
+/* Embedding update UI classes */
+.embeds {
+    border-top: solid 1px #1ba3c2;
+    border-bottom: solid 1px #1ba3c2;
+    padding: 15px 10px;
+    background: #b6eefa;
+    word-break: break-all;
+}
+
+.embeds span {
+    font-weight: bold;
+}
+
+.embeds p {
+    font-size: 1.75vh;
+    padding: 8px 10px;
+    margin: 0;
+}

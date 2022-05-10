@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="/eel.js"></script>
+        <script type="text/javascript" src="errorHandling.js" defer="defer"></script>
+        <script type="text/javascript" src="script.js" defer="defer"></script>
+
+        <link href="style.css" rel="stylesheet" type="text/css"/>
+    </head>
+
+    <body>
+        <div class="header">
+            <h1>MAGI</h1>
+            <h2>MadCap Automatic Graphic Implementation</h2>
+            <h4>v3.0</h4>
+        </div>
+
+        <div class="mainOptions">
+            <div class="loginOptions">
+                <h2>Login Details</h2>
+                <label for="spUser">SharePoint Username</label>
+                <input type="text" id="spUser" name="spUser">
+                <label for="spPass">SharePoint Password</label>
+                <input type="password" id="spPass" name="spPass">
+                <label for="mKey">Monday API Key</label>
+                <input type="text" id="mKey" name="mKey">
+                <button onclick="js_writeLoginDetails()">Save Login Details</button>
+            </div>
+
+            <div class="actionOptions">
+                <h2>Options</h2>
+                <div>
+                    <input type="checkbox" id="embedGraphics" name="actions">
+                    <label for="embedGraphics">Embed graphics</label><br>
+                </div>
+                <div>
+                    <input type="checkbox" id="updateMonday" name="actions">
+                    <label for="updateMonday">Update Monday</label><br>
+                </div>
+                <div>
+                    <input type="checkbox" id="outputReport" name="actions">
+                    <label for="embedReport">Output report</label><br>
+                </div>
+            </div>
+        </div>
+
+        <div class="mainBody">
+            <div id="logWindow">
+            </div>
+
+            <div id="embedding">
+                <div class="radioGroup">
+                    <div>
+                        <label for="local">From local</label>
+                        <input type="radio" id="local" name="imageLocation" value="local">
+                    </div>
+                    <div>
+                        <label for="sharepoint">From SharePoint</label>
+                        <input type="radio" id="sharepoint" name="imageLocation" value="sharepoint" checked>
+                    </div>
+                </div>
+
+                <div class="checkGroup">
+                    <div class="flexeven">
+                        <div>
+                            <label for="module">Module</label>
+                            <select name="module" id="moduleSelect" onchange="js_setModulePath(this.value)">
+                                <option value="M1" selected>M1</option>
+                                <option value="M2">M2</option>
+                                <option value="M3">M3</option>
+                                <option value="M4">M4</option>
+                                <option value="M5">M5</option>
+                                <option value="M6">M6</option>
+                                <option value="M7">M7</option>
+                                <option value="M8">M8</option>
+                                <option value="M9">M9</option>
+                                <option value="M10">M10</option>
+                                <option value="M11">M11</option>
+                                <option value="M12">M12</option>
+                                <option value="M13">M13</option>
+                                <option value="M14">M14</option>
+                                <option value="M15">M15</option>
+                                <option value="M16">M16</option>
+                                <option value="M17">M17</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="submodule">Submodule</label>
+                            <select name="submodule" id="submoduleSelect">
+                                <option value="1.1" selected>1.1</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flexeven">
+                        <div style="width: 92.5%">
+                            <label for="board">Board</label>
+                            <select name="board" id="boardSelect">
+                                <option value="M1">M1</option>
+                                <option value="M2">M2</option>
+                                <option value="M3">M3</option>
+                                <option value="M4">M4</option>
+                                <option value="M5">M5</option>
+                                <option value="M6">M6</option>
+                                <option value="M7">M7</option>
+                                <option value="M8">M8</option>
+                                <option value="M9">M9</option>
+                                <option value="M10">M10</option>
+                                <option value="M11">M11</option>
+                                <option value="M12">M12</option>
+                                <option value="M13">M13</option>
+                                <option value="M14">M14</option>
+                                <option value="M15">M15</option>
+                                <option value="M16">M16</option>
+                                <option value="M17">M17</option>
+                                <option value="Upload to Flare" selected>Upload to Flare</option>
+                                <option value="Media Requests">Media Requests</option>
+                                <option value="Learning Designers">Learning Designers</option>
+                                <option value="Sort into Modules">Sort into Modules</option>
+                                <option value="Generic Content Archive">Generic Content Archive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="js_getActions()">Go! >>></button>
+            </div>
+        </div>
+    </body>
+</html>
