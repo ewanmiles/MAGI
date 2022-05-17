@@ -1,7 +1,8 @@
 {
-  "requests": true,
-  "pandas": true,
-  "numpy": true,
-  "matplotlib": true,
-  "Office365-REST-Python-Client": true
+  "requests": false,
+  "pandas": false,
+  "numpy": false,
+  "matplotlib": false,
+  "Office365-REST-Python-Client": false,
+  "eel": false
 }

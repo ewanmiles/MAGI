@@ -46,8 +46,10 @@ with open('moduleConfig.json', 'r') as f:
 def fetchDataIndex(jsonArr, name):
     """
     Cycles through json list to return first object with given name field, otherwise returns none; inputs
+        
         - jsonArr (arr): List of json objects
         - name (str): Value of 'name' field to check for
+    
     DO NOT USE ON LARGE OBJECT LISTS. This is very basic code used for smaller operations.
     """
 
@@ -62,8 +64,10 @@ def fetchDataIndex(jsonArr, name):
 def buildItemList(jsonArr, name):
     """
     Cycles through json object list, finds first object with matching name field, builds list of items from that board; inputs
+        
         - jsonArr (arr): List of json objects
         - name (str): Value of 'name' field to check for
+    
     DO NOT USE ON LARGE OBJECT LISTS. This is very basic code used for smaller operations.
     """
 
@@ -73,7 +77,9 @@ def buildItemList(jsonArr, name):
 def parseSubmodule(text):
     """
     Parses module and full submodule path from a given file name; input
+        
         - text (str): File to parse module and submodule from
+    
     Returns two-item list [module, submodule], module will be "M_"
     """
 
@@ -93,8 +99,10 @@ def parseSubmodule(text):
 def deleteMultiple(text, substrs):
     """
     Uses replace string method to delete multiple substrings within given string; inputs
+        
         - text (str): Given string to delete substrings from
         - substrs (arr): List of substrings to remove
+    
     Returns the string with substrings deleted, note: will remove ALL instances of each given substring
     """
 
@@ -109,11 +117,14 @@ def deleteMultiple(text, substrs):
 def generateFigure(img, caption, conds):
     """
     Simple function to avoid hardcoding figure snippet. Takes image name, caption and conditions and turns out necessary figure to add to new doc; inputs
+        
         - img (str): Image name to embed (typically relative path from location to New/ folder)
         - caption (str): Caption to embed (just caption, tags etc. removed)
         - conds (str): MC Conditions for the figure (MAKE SURE THE FIRST CHAR IS A SPACE, e.g. ' {conds}')
+    
     Returns a figure in four lines as an array to add to the line list of the new document
     """
+
     figure = []
 
     figure += [f'\n<figure{conds} class="fortyPercent">']
@@ -128,6 +139,7 @@ def py_setModulePath(newPath):
     """
     Basic setter for global variable MODULE_PATH that can be accessed from the JS
     """
+
     global MODULE_PATH
 
     MODULE_PATH = newPath
@@ -135,6 +147,10 @@ def py_setModulePath(newPath):
 
 @eel.expose
 def fillLoginDetails():
+    """
+    Sends the login details unpacked from the Monday/SharePoint jsons to the front end for unpacking into the UI.
+    """
+
     return {
         'spUser': spConfig['user'],
         'spPass': spConfig['password'],
@@ -143,6 +159,10 @@ def fillLoginDetails():
 
 @eel.expose
 def py_writeLoginDetails(dict):
+    """
+    Saves the login details entered in the UI to the Monday/SharePoint jsons for loading in future.
+    """
+
     print('Writing new login details...')
 
     mondayConfig['monday']['login']['apiKey'] = dict['mKey']
@@ -165,12 +185,17 @@ def py_writeLoginDetails(dict):
 
 @eel.expose
 def createLoginContext(loginObj):
+    """
+    Creates a SharePoint login context as a global variable for the Python to make API calls using the given credentials, with input
+
+        - loginObj (dict): Contains login credentials to create context with, input in the front end
+
+    The main intention is to create the global context variable. Can either return a success message or an error trigger for the front end errorHandling.js.
+    """
     global spCtx
 
     #URL to RG SharePoint site from config
     site_url = spConfig['site']
-
-    print(loginObj)
 
     #Create API context for queries
     spCtx = ClientContext(site_url).with_credentials(UserCredential(loginObj['spName'], loginObj['spPass']))
@@ -189,6 +214,11 @@ def createLoginContext(loginObj):
 
 @eel.expose
 def py_getActions(actionSet):
+    """
+    Small function to get action set from js_getActions() in the front end and choose functions to run from the details.
+
+    Runs other functions, think of this as a mapping from the front end details to run the correct programs in Python.
+    """
 
     #Map of functions to run according to received actions
     actionMap2 = {
@@ -212,6 +242,13 @@ def py_getActions(actionSet):
 
 @eel.expose
 def compileSubmoduleChoices(modulePath):
+    """
+    Checks submodule Regex to build list of submodule folders in the target module, with input
+
+        - modulePath (str, pathlike): Path to target module to build submodule list for
+
+    Returns the list of submodule folders found in the target location
+    """
 
     #This regex can essentially pick up two, three and four digit submodules, e.g. 1.1 - 1.1.1.1
     reg = "^(.*?((([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?)(\.[0-9]{1,}[a-zA-Z]?)?)(\.[0-9]{1,}[a-zA-Z]?)?).*)$"
@@ -254,7 +291,9 @@ def compileSubmoduleChoices(modulePath):
 def queryBoardID(boardName):
     """
     Sends a query to monday for a board ID that is not in the monday config; inputs
+        
         - boardName (str): Name of the Monday board to find the ID for
+    
     PERMANENTLY ADDS OR REPLACES the board ID in the monday config
     """
 
@@ -337,10 +376,11 @@ def checkProjectImages(images):
 @eel.expose
 def downloadFiles(actionSet):
     """
-    Logs in to SharePoint API and downloads list of files given, saving them to a specific directory; inputs
-        - fileList (arr): List of file names to search for (no extension), here scraped from Monday
-        - outDir (str/path): Directory to save the downloaded files to
-    Note: REQUIRES SharePoint API config external with valid credentials, unpacked as global variable
+    Logs in to SharePoint API and downloads list of files given, saving them to a specific directory; input
+
+        - actionSet (dict): Set of information about what actions to take from script.js, including image locations and login details. See js_getActions().
+
+    Note: REQUIRES SharePoint API config external with valid credentials, unpacked as global variable. No return.
     """
     
     (targetSubmodule, targetBoard) = (actionSet['actionDetails']['submoduleSelect'], actionSet['actionDetails']['boardSelect'])
@@ -430,9 +470,16 @@ def downloadFiles(actionSet):
 def outputReport(actionSet):
     """
     Function that builds data profile of images already in the New folder, without API contact
-    - Prints to logger the percentage of successfully embedded images
-    - Generates txt report for images that are not used
-    - Generates json for more in depth info
+
+        - Prints to logger the percentage of successfully embedded images;
+        - Generates txt report for images that are not used;
+        - Generates json for more in depth info.
+
+    Input:
+
+        - actionSet (dict): Set of information about what actions to take from script.js, including image locations and login details. See js_getActions().
+    
+    No return.
     """
 
     eel.log(f'Building report for {MODULE_PATH}...')
@@ -498,6 +545,12 @@ def outputReport(actionSet):
             f.write('\tNone\n')
 
 def updateMonday(actionSet):
+    """
+    Matches any images in the New folder to images already embedded in the project by checking the HTML files.
+    If any are found to match, tries to update the Upload To Flare board by changing the image item status with an API call.
+
+    The input 'actionSet' is not used, but is needed because of how py_getActions triggers the function.
+    """
     #Monday request header and context
     (mondayKey, mondayUrl) = (mondayConfig['monday']['login']['apiKey'], mondayConfig['monday']['login']['apiUrl'])
     mondayHeaders = {"Authorization" : mondayKey}
@@ -563,6 +616,15 @@ def updateMonday(actionSet):
         r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
 
 def embedGraphics(actionSet):
+    """
+    First builds list of images from the New folder with the target submodule in the name.
+    Second builds list of HTML files in the target submodule folder in the project.
+    Finally, builds a graphic replace map for each HTML doc and embeds the correct images, with input
+        
+        - actionSet (dict): Set of information about what actions to take from script.js, including image locations and login details. See js_getActions().
+    
+    Returns nothing, but writes new embedded files to {fileName}-embedded.htm for a sanity check; also updates frontend UI with info on embedding.
+    """
     
     targetSubmodule = actionSet['actionDetails']['submoduleSelect']
 
@@ -574,7 +636,7 @@ def embedGraphics(actionSet):
     #Unfortunately we have to walk() to get the path
     for root, dirs, files in os.walk(f'{MODULE_PATH}/Content/'):
         for d in dirs:
-            if d == targetSubmodule:
+            if d == targetSubmodule: #NOTE: Flare folder MUST be named the submodule number ONLY, e.g. 7.5
                 targetFolder = os.path.join(root, d) #Our path to target submodule folder
 
     #Build the GRM. Has structure {file: {line: image, ...}, ...} for all html files under target folder EXCLUDING ones that have '-embedded' in the name
@@ -582,7 +644,7 @@ def embedGraphics(actionSet):
     graphicReplaceMap = {}
     for root, dirs, files in os.walk(targetFolder):
         for f in files:
-            if '-embedded' in f:
+            if '-embedded' in f: #Skip files already embedded
                 continue
 
             filePath = os.path.join(root, f)
@@ -641,7 +703,7 @@ def embedGraphics(actionSet):
             newDoc += generateFigure(graphicReplaceMap[file][graphicInds[0]], caption, conditions)
             
             filePathEnd = "{0} - {1}".format(file.rsplit('\\', 2)[-2], file.rsplit('\\', 2)[-1])
-            eel.updateEmbedUI(filePathEnd, grmContent)
+            eel.updateEmbedUI(filePathEnd, [grmContent]) #Make grmContent a list here for the way the JS function works (uses forEach)
             
             newDoc += line_list[graphicInds[0]+2:] # +2 removes the lines where it detected the graphic (no longer needed)
 
@@ -672,8 +734,8 @@ def embedGraphics(actionSet):
                 else:
                     newDoc += line_list[g+2:graphicInds[i+1]] # +2 removes the lines where it detected the graphic (no longer needed)
 
-        filePathEnd = "{0} - {1}".format(file.rsplit('\\', 2)[-2], file.rsplit('\\', 2)[-1])
-        eel.updateEmbedUI(filePathEnd, grmContent)
+            filePathEnd = "{0} - {1}".format(file.rsplit('\\', 2)[-2], file.rsplit('\\', 2)[-1])
+            eel.updateEmbedUI(filePathEnd, grmContent)
 
         with open(file.replace('.htm', '-embedded.htm'), 'w', encoding='utf8') as f:
             for l in newDoc:

@@ -7,7 +7,7 @@ function js_writeLoginDetails() {
 
 /**
  * Setter for the python AND JS global variable MODULE_PATH
- * @param {} modulePath System path to the project folder to set as the global module path
+ * @param {str} modulePath System path to the project folder to set as the global module path
  */
 function js_setModulePath(modulePath) {
     MODULE_PATH = `/${modulePath}`
@@ -16,6 +16,10 @@ function js_setModulePath(modulePath) {
     eel.compileSubmoduleChoices(`/${modulePath}`)(updateSubmodules); //Get the built submodules
 }
 
+/**
+ * Updates the submodule select box with the submodule choices compiled by the Py backend
+ * @param {str[]} list Set of submodule options to add to the select
+ */
 const updateSubmodules = list => {
     selectEl = document.getElementById('submoduleSelect');
     selectEl.innerHTML = ''; //Clear submodule select dropdown options
@@ -25,6 +29,12 @@ const updateSubmodules = list => {
     });
 }
 
+/**
+ * Gets the set of actions chosen in the UI by checking the radio/select/checkbox inputs, sends them to Py backend
+ * 
+ * Action set is sent as a dictionary, unpacked by a sort of mapping function in Python, including login details, 
+ * selected actions from the checkboxes, image location from the radio, action details from the selects. 
+ */
 function js_getActions() {
 
     let imgLocation = document.querySelector('input[name="imageLocation"]:checked').id;
@@ -46,10 +56,12 @@ function js_getActions() {
         'imageLocation': imgLocation,
         'actionDetails': actionDetails
     });
-
-    // eel.queryBoardID(actionDetails['boardSelect'])(handleQuery);
 }
 
+/**
+ * Callback function for when a sharepoint login context is created in the backend, raises errors to the logger if fail.
+ * @param {str} res Whatever is returned from the login context creation call, whether it triggers an error or is successful. See createLoginContext() in Python.
+ */
 const handleContext = res => {
     if (res === 'Connection') {
         e = new ConnectionError();
@@ -62,21 +74,25 @@ const handleContext = res => {
     }
 }
 
-const handleQuery = res => {
-    if (typeof res === 'object') {
-        e = new MondayError(res);
-        log(e.msg);
-    } else {
-        log(res);
-    }
-}
-
+/**
+ * General function to update the value of any target with given id.
+ * 
+ * NOTE: Obviously not error proof. Will raise an error for setting the value of something that lacks a value attr.
+ * 
+ * @param {str} id ID of target grabbed from DOM using getElementById()
+ * @param {str} value New value to set for target
+ */
 const updateValue = (id, value) => {
     let target = document.getElementById(id);
     target.value = value;
 }
 
+
 eel.expose(buildDownloadList)
+/**
+ * Purely aesthetic. Builds UI items for each of the graphics in the given download list.
+ * @param {str[]} graphics List of graphics that will be/have been downloaded
+ */
 function buildDownloadList(graphics) {
     graphics.forEach(g => {
         LOGGER.innerHTML += `<div name="${g}" class="pending"><span>${g}</span><p>Pending</p></div>`;
@@ -84,6 +100,11 @@ function buildDownloadList(graphics) {
 }
 
 eel.expose(updateDownloadUI)
+/**
+ * Purely aesthetic. Updates graphic item UI to new download status of given graphic by matching the graphic name with the correct div name attr.
+ * @param {str} graphic Graphic name to update - will match given querySelector(div[name=graphic])
+ * @param {str} status Status of the download, e.g. Pending, Failed, Downloaded
+ */
 function updateDownloadUI(graphic, status) {
     let el = document.querySelector(`div[name="${graphic}"]`);
 
@@ -93,24 +114,37 @@ function updateDownloadUI(graphic, status) {
 }
 
 eel.expose(updateMondayUI)
+/**
+ * Purely aesthetic. Builds UI items for each graphic that is successfully updated on the Monday board.
+ * @param {str} graphic Graphic name to build item for
+ */
 function updateMondayUI(graphic) {
     LOGGER.innerHTML += `<div name="${graphic}" class="mondayUpdate"><span>${graphic}</span><p>Media Inserted >>> Sort into Modules</p></div>`
 }
 
 eel.expose(updateEmbedUI)
+/**
+ * Purely aesthetic. Updates the UI with information about where the graphics have been successfully embedded.
+ * @param {str} file HTML file name where graphics have been embedded
+ * @param {str[]} list List of graphics that have been embedded. List entries are two element lists - [0] is HTML file line of embed, [1] is graphic name
+ */
 function updateEmbedUI(file, list) {
     let el = document.createElement('div');
     el.className = 'embeds';
     el.innerHTML = `<span>${file}</span>`;
 
     list.forEach(graphic => {
-        el.innerHTML += `<p><b>${graphic[0]}</b>: ${graphic[1]}</p>`;
+       el.innerHTML += `<p><b>${graphic[0]}</b>: ${graphic[1]}</p>`;
     });
 
     LOGGER.innerHTML += el.outerHTML;
 }
 
 eel.expose(log);
+/**
+ * Basic logging function for the log window. Adds <p> tag to the window with given text.
+ * @param {str} text String to log to the window
+ */
 function log(text) {
     if (text === 'You haven\'t selected any actions.') {
         LOGGER.innerHTML = `<p>${text}</p>`;
@@ -120,6 +154,11 @@ function log(text) {
 }
 
 eel.expose(raiseError);
+/**
+ * The beginnings of an obviously unfinished and possibly unnecessary error handling system.
+ * @param {str} ref Reference type of error to raise, e.g. Monday, Login, Sharepoint
+ * @param {str} content Info to pass to errorHandling.js to produce correct error msg
+ */
 function raiseError(ref, content) {
     switch(ref) {
         case 'Monday':
