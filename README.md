@@ -23,7 +23,7 @@ check. This is done mainly for sanity as instantly overwriting files could break
 
 ## Where do I add my API details?
 
-MAGI uses tkinter to generate a GUI for ease of use. The first window that appears will prompt you to add your
+MAGI uses eel, a Python framework, to generate a GUI for ease of use. In the window that appears, you can enter your details:
 
  - SharePoint username
  - SharePoint password
