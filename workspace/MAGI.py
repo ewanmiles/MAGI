@@ -1,4 +1,4 @@
-import json, re, os, time
+import json, re, os
 
 #Package install if necessary
 print("Checking packages...")
@@ -17,9 +17,6 @@ from office365.runtime.auth.user_credential import UserCredential
 from office365.sharepoint.client_context import ClientContext
 
 import requests
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import eel
 
 eel.init("web") #Initialise front end files from web dir
@@ -308,10 +305,13 @@ def queryBoardID(boardName):
 
     data = {'query' : query}
 
-    #Post request, parse JSON response
-    r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
-    returned = r.json()['data']['boards']
-    Id = None
+    try:
+        r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
+        returned = r.json()['data']['boards']
+        Id = None
+    except:
+        eel.log('Sorry, you do not appear to be connected to the internet. Please check your connection.')
+        return None
 
     #Iterate through returned boards to find matching board name and its ID
     for board in returned:
@@ -412,8 +412,12 @@ def downloadFiles(actionSet):
     data = {'query' : query}
 
     #Post request, parse JSON response
-    r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
-    returned = r.json()['data']['boards']
+    try:
+        r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
+        returned = r.json()['data']['boards']
+    except:
+        eel.log('Sorry, you do not appear to be connected to the internet. Please check your connection.')
+        return None
 
     #Build a list of item names from the Monday board
     targetGraphics = buildItemList(returned, targetBoard)
@@ -576,8 +580,12 @@ def updateMonday(actionSet):
     data = {'query' : query}
 
     #Post request, parse JSON response
-    r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
-    returned = r.json()['data']['boards']
+    try:
+        r = requests.post(url=mondayUrl, json=data, headers=mondayHeaders)
+        returned = r.json()['data']['boards']
+    except:
+        eel.log('Sorry, you do not appear to be connected to the internet. Please check your connection.')
+        return None
 
     #Build a list of item names from the Monday board
     targetGraphics = [(i['name'], i['id']) for i in returned[fetchDataIndex(returned, 'Upload to Flare')]['items']]
@@ -642,29 +650,39 @@ def embedGraphics(actionSet):
     #Build the GRM. Has structure {file: {line: image, ...}, ...} for all html files under target folder EXCLUDING ones that have '-embedded' in the name
     #Available at grm.json (dumped, indent 2)
     graphicReplaceMap = {}
-    for root, dirs, files in os.walk(targetFolder):
-        for f in files:
-            if '-embedded' in f: #Skip files already embedded
-                continue
+    try:
+        for root, dirs, files in os.walk(targetFolder):
+            for f in files:
+                if '-embedded' in f: #Skip files already embedded
+                    continue
 
-            filePath = os.path.join(root, f)
+                filePath = os.path.join(root, f)
 
-            with open(filePath, 'r', encoding="utf8") as f:
-                line_list = f.readlines()
+                with open(filePath, 'r', encoding="utf8") as f:
+                    line_list = f.readlines()
 
-            graphicReplaceMap[f.name] = {} #Add file to GRM
+                graphicReplaceMap[f.name] = {} #Add file to GRM
 
-            for index, l in enumerate(line_list):
-                if any(os.path.splitext(graphic)[0] in l for graphic in images):
-                    if '<img' in l: #Skip images already in figures
-                        continue
-                    
-                    im = [i for i in images if os.path.splitext(i)[0] in l][0]
+                for index, l in enumerate(line_list):
+                    if any(os.path.splitext(graphic)[0] in l for graphic in images):
+                        if '<img' in l: #Skip images already in figures
+                            continue
+                        
+                        im = [i for i in images if os.path.splitext(i)[0] in l][0]
 
-                    dirPath = os.path.dirname(os.path.realpath(f.name)) #Absolute path to current file's dir
-                    relPath = os.path.relpath(folderPath, dirPath) #Relative path from dir to images folder
+                        dirPath = os.path.dirname(os.path.realpath(f.name)) #Absolute path to current file's dir
+                        relPath = os.path.relpath(folderPath, dirPath) #Relative path from dir to images folder
 
-                    graphicReplaceMap[f.name][index] = os.path.join(relPath,im)
+                        graphicReplaceMap[f.name][index] = os.path.join(relPath,im)
+
+    except UnboundLocalError: #No folder specifically matching chosen submodule
+
+        #Use regex to pick up next module selector up (e.g. 12.4 for 12.4.1 given)
+        reg = "^(.*?((([0-9]{1,}\.[0-9]{1,}[a-zA-Z]?)(\.[0-9]{1,}[a-zA-Z]?)?)(\.[0-9]{1,}[a-zA-Z]?)?).*)$"
+        found = re.findall(reg, targetSubmodule)
+        nextUp = next(i for i in found[0] if i != targetSubmodule) #First regex match that is not the target submodule (next one up)
+
+        eel.log(f'Unable to find a folder called <b>{targetSubmodule}</b> in the project. Please select the correct folder for your target submodule (<i>Hint: it might be <i><b>{nextUp}</b></i>).')
 
     #Save the GRM for debug and info
     with open('grm.json', 'w') as j:
